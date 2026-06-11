@@ -21,12 +21,13 @@ export function Refund() {
 
       <Input required legend="Nome da solicitação" />
 
-      <div>
+      <div className="flex gap-4">
         <Select
           required
           legend="Categoria"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          className="basis-[60%] min-w-0"
         >
           {CATEGORIES_KEYS.map((category) => (
             <option value={category} key={category}>
@@ -34,6 +35,8 @@ export function Refund() {
             </option>
           ))}
         </Select>
+
+        <Input required legend="Valor" className="basis-[40%] min-w-0" />
       </div>
     </form>
   )
