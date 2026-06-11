@@ -5,12 +5,23 @@ import { Select } from "../components/Select"
 import { Upload } from "../components/Upload"
 
 import { CATEGORIES, CATEGORIES_KEYS } from "../utils/categories"
+import { Button } from "../components/Button"
 
 export function Refund() {
+  const [name, setName] = useState("")
   const [category, setCategory] = useState("")
+  const [amount, setAmount] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [filename, setFilename] = useState<File | null>(null)
+
+  function onSubmit(e: React.SubmitEvent) {
+    e.preventDefault()
+
+    console.log(name, category, amount, filename)
+  }
 
   return (
-    <form className="w-full flex flex-col gap-6">
+    <form onSubmit={onSubmit} className="w-full flex flex-col gap-6">
       <header>
         <h1 className="text-gray-100 font-bold text-xl">
           Solicitação de reembolso
@@ -20,7 +31,12 @@ export function Refund() {
         </p>
       </header>
 
-      <Input required legend="Nome da solicitação" />
+      <Input
+        required
+        legend="Nome da solicitação"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
 
       <div className="flex gap-4">
         <Select
@@ -37,10 +53,23 @@ export function Refund() {
           ))}
         </Select>
 
-        <Input required legend="Valor" className="basis-[40%] min-w-0" />
+        <Input
+          required
+          legend="Valor"
+          className="basis-[40%] min-w-0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
       </div>
 
-      <Upload />
+      <Upload
+        filename={filename && filename.name}
+        onChange={(e) => e.target.files && setFilename(e.target.files[0])}
+      />
+
+      <Button isLoading={isLoading} type="submit">
+        Enviar
+      </Button>
     </form>
   )
 }
