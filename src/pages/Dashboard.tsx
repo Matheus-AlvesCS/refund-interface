@@ -3,6 +3,7 @@ import { useState } from "react"
 import { Input } from "../components/Input"
 import { Button } from "../components/Button"
 import { RefundItem } from "../components/RefundItem"
+import { Pagination } from "../components/Pagination"
 
 import { CATEGORIES } from "../utils/categories"
 
@@ -18,11 +19,25 @@ const fake_user = {
 
 export function Dashboard() {
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(10)
 
   function fetchUsers(e: React.SubmitEvent) {
     e.preventDefault()
 
     console.log(search)
+  }
+
+  function handlePagination(action: "next" | "previous") {
+    setPage((prevPage) => {
+      if (action === "next" && prevPage < totalPages) {
+        return prevPage + 1
+      } else if (action === "previous" && prevPage > 1) {
+        return prevPage - 1
+      }
+
+      return prevPage
+    })
   }
 
   return (
@@ -45,6 +60,13 @@ export function Dashboard() {
       <div className="flex flex-col gap-4 my-6 max-h-85.5 overflow-y-scroll">
         <RefundItem data={fake_user} />
       </div>
+
+      <Pagination
+        current={page}
+        total={totalPages}
+        onNext={() => handlePagination("next")}
+        onPrevious={() => handlePagination("previous")}
+      />
     </div>
   )
 }
