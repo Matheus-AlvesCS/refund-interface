@@ -12,7 +12,7 @@ const fake_user = {
   id: "8",
   name: "Matheus",
   category: "Alimentação",
-  amount: "58.85",
+  amount: 58.85,
   categoryImg: CATEGORIES["food"].icon,
 }
 
