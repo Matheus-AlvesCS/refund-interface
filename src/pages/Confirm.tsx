@@ -10,7 +10,7 @@ export function Confirm() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="bg-gray-500 w-full rounded-2xl flex flex-col items-center p-5 md:p-10 gap-6 md:max-w-lg">
       <h1 className="text-green-100 font-bold text-2xl">
         Solicitação enviada!
       </h1>

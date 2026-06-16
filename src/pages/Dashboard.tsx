@@ -2,7 +2,7 @@ import { useState } from "react"
 
 import { Input } from "../components/Input"
 import { Button } from "../components/Button"
-import { RefundItem } from "../components/RefundItem"
+import { RefundItem, type RefundItemProps } from "../components/RefundItem"
 import { Pagination } from "../components/Pagination"
 
 import { CATEGORIES } from "../utils/categories"
@@ -21,6 +21,7 @@ export function Dashboard() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(10)
+  const [refunds, setRefunds] = useState<RefundItemProps[]>([fake_user])
 
   function fetchUsers(e: React.SubmitEvent) {
     e.preventDefault()
@@ -41,7 +42,7 @@ export function Dashboard() {
   }
 
   return (
-    <div>
+    <div className="bg-gray-500 w-full rounded-2xl p-5 md:p-10 md:min-w-270.5">
       <h1 className="text-gray-100 text-xl font-bold">Solicitações</h1>
 
       <form
@@ -58,7 +59,19 @@ export function Dashboard() {
       </form>
 
       <div className="flex flex-col gap-4 my-6 max-h-85.5 overflow-y-scroll">
-        <RefundItem data={fake_user} />
+        {refunds.length > 0 ? (
+          refunds.map((refund) => (
+            <RefundItem
+              key={refund.id}
+              data={refund}
+              href={`/refund/${refund.id}`}
+            />
+          ))
+        ) : (
+          <h2 className="text-gray-100 text-xl font-semibold text-center">
+            Não há nenhuma solicitação
+          </h2>
+        )}
       </div>
 
       <Pagination

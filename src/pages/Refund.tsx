@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router"
+import { useNavigate, useParams } from "react-router"
 
 import { Input } from "../components/Input"
 import { Select } from "../components/Select"
@@ -8,24 +8,34 @@ import { Upload } from "../components/Upload"
 import { CATEGORIES, CATEGORIES_KEYS } from "../utils/categories"
 import { Button } from "../components/Button"
 
+import fileSvg from "../assets/file.svg"
+
 export function Refund() {
-  const [name, setName] = useState("")
-  const [category, setCategory] = useState("")
-  const [amount, setAmount] = useState("")
+  const [name, setName] = useState("Matheus")
+  const [category, setCategory] = useState("food")
+  const [amount, setAmount] = useState("58.85")
   const [isLoading, setIsLoading] = useState(false)
   const [filename, setFilename] = useState<File | null>(null)
 
   const navigate = useNavigate()
+  const params = useParams<{ id: string }>()
 
   function onSubmit(e: React.SubmitEvent) {
     e.preventDefault()
+
+    if (params.id) {
+      return navigate(-1)
+    }
 
     console.log(name, category, amount, filename)
     navigate("/confirm", { state: { fromSubmit: true } })
   }
 
   return (
-    <form onSubmit={onSubmit} className="w-full flex flex-col gap-6">
+    <form
+      onSubmit={onSubmit}
+      className="bg-gray-500 w-full rounded-2xl flex flex-col p-5 md:p-10 gap-6 md:min-w-lg"
+    >
       <header>
         <h1 className="text-gray-100 font-bold text-xl">
           Solicitação de reembolso
@@ -39,6 +49,7 @@ export function Refund() {
         required
         legend="Nome da solicitação"
         value={name}
+        disabled={!!params.id}
         onChange={(e) => setName(e.target.value)}
       />
 
@@ -47,6 +58,7 @@ export function Refund() {
           required
           legend="Categoria"
           value={category}
+          disabled={!!params.id}
           onChange={(e) => setCategory(e.target.value)}
           className="basis-[60%] min-w-0"
         >
@@ -62,17 +74,29 @@ export function Refund() {
           legend="Valor"
           className="basis-[40%] min-w-0"
           value={amount}
+          disabled={!!params.id}
           onChange={(e) => setAmount(e.target.value)}
         />
       </div>
 
-      <Upload
-        filename={filename && filename.name}
-        onChange={(e) => e.target.files && setFilename(e.target.files[0])}
-      />
+      {params.id ? (
+        <a
+          href="https://youtube.com"
+          target="_blank"
+          className="flex justify-center items-center gap-2 my-2 text-green-100 font-semibold text-sm hover:text-green-200 transition ease-linear"
+        >
+          <img src={fileSvg} alt="file-icon" />
+          Abrir comprovante
+        </a>
+      ) : (
+        <Upload
+          filename={filename && filename.name}
+          onChange={(e) => e.target.files && setFilename(e.target.files[0])}
+        />
+      )}
 
       <Button isLoading={isLoading} type="submit">
-        Enviar
+        {params.id ? "Voltar" : "Enviar"}
       </Button>
     </form>
   )
