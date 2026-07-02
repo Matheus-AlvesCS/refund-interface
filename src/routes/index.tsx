@@ -8,7 +8,7 @@ import { Loading } from "../components/Loading"
 
 const session = {
   user: {
-    role: "manager",
+    role: "",
   },
 }
 
