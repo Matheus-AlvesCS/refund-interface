@@ -7,24 +7,17 @@ import { ManagerRoutes } from "./ManagerRoutes"
 
 import { Loading } from "../components/Loading"
 
-const session = {
-  user: {
-    role: "",
-  },
-}
-
 const isLoading = false
 
 export function Routes() {
-  const context = useAuth()
-  console.log(context)
+  const { session } = useAuth()
 
   if (isLoading) {
     return <Loading />
   }
 
   function Route() {
-    switch (session.user.role) {
+    switch (session?.user.role) {
       case "employee":
         return <EmployeeRoutes />
       case "manager":
