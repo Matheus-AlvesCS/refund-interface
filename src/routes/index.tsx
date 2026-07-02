@@ -1,4 +1,5 @@
 import { BrowserRouter } from "react-router"
+import { useAuth } from "../hooks/useAuth"
 
 import { AuthRoutes } from "./AuthRoutes"
 import { EmployeeRoutes } from "./EmployeeRoutes"
@@ -15,6 +16,9 @@ const session = {
 const isLoading = false
 
 export function Routes() {
+  const context = useAuth()
+  console.log(context)
+
   if (isLoading) {
     return <Loading />
   }
