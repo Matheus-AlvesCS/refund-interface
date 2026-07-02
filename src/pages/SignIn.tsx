@@ -1,35 +1,62 @@
-import { useState } from "react"
+import { useActionState } from "react"
+import { AxiosError } from "axios"
+import * as z from "zod"
+
+import { api } from "../services/api"
 
 import { Input } from "../components/Input"
 import { Button } from "../components/Button"
 
+const signInSchema = z.object({
+  email: z.email("E-mail inválido").trim(),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+})
+
 export function SignIn() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [state, formAction, isLoading] = useActionState(signIn, null)
 
-  function onSubmit(e: React.SubmitEvent) {
-    e.preventDefault()
+  async function signIn(_: any, formData: FormData) {
+    try {
+      const data = signInSchema.parse(Object.fromEntries(formData.entries()))
 
-    console.log(email, password)
+      const response = await api.post("/sessions", data)
+      console.log(response.data)
+    } catch (error) {
+      console.log(error)
+
+      if (error instanceof z.ZodError) {
+        return { error: error.issues[0].message }
+      } else if (error instanceof AxiosError) {
+        return { error: error.response?.data.message }
+      }
+
+      return { error: "Ocorreu um erro ao tentar fazer login" }
+    }
   }
 
   return (
-    <form onSubmit={onSubmit} className="w-full flex flex-col gap-4">
+    <form action={formAction} className="w-full flex flex-col gap-4">
       <Input
         required
+        name="email"
         legend="E-mail"
         type="email"
         placeholder="seu@email.com"
-        onChange={(e) => setEmail(e.target.value)}
       />
+
       <Input
         required
+        name="password"
         legend="Senha"
         type="password"
         placeholder="123456"
-        onChange={(e) => setPassword(e.target.value)}
       />
+
+      {state?.error && (
+        <p className="text-red-600 font-semibold text-xs text-center">
+          {state.error}
+        </p>
+      )}
 
       <Button type="submit" isLoading={isLoading}>
         Entrar
