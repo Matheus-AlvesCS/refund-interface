@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useActionState } from "react"
 import { useNavigate } from "react-router"
 import * as z from "zod"
 import { AxiosError } from "axios"
@@ -21,26 +21,13 @@ const signUpSchema = z
   })
 
 export function SignUp() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [state, formAction, isLoading] = useActionState(signUp, null)
 
   const navigate = useNavigate()
 
-  async function onSubmit(e: React.SubmitEvent) {
-    e.preventDefault()
-
+  async function signUp(_: any, formData: FormData) {
     try {
-      setIsLoading(true)
-
-      const data = signUpSchema.parse({
-        name,
-        email,
-        password,
-        confirmPassword,
-      })
+      const data = signUpSchema.parse(Object.fromEntries(formData.entries()))
 
       await api.post("/users", data)
 
@@ -48,55 +35,54 @@ export function SignUp() {
         navigate("/")
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
 
       if (error instanceof z.ZodError) {
-        return alert(error.issues[0].message)
+        return { error: error.issues[0].message }
       } else if (error instanceof AxiosError) {
-        return alert(error.response?.data.message)
+        return { error: error.response?.data.message }
       }
 
-      return alert("Erro ao criar conta, tente novamente mais tarde")
-    } finally {
-      setIsLoading(false)
+      return { error: "Ocorreu um erro ao criar a conta." }
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="w-full flex flex-col gap-4">
-      <Input
-        required
-        legend="Nome"
-        placeholder="Seu nome"
-        onChange={(e) => setName(e.target.value)}
-      />
+    <form action={formAction} className="w-full flex flex-col gap-4">
+      <Input required name="name" legend="Nome" placeholder="Seu nome" />
 
       <Input
         required
+        name="email"
         legend="E-mail"
         type="email"
         placeholder="seu@email.com"
-        onChange={(e) => setEmail(e.target.value)}
       />
 
       <Input
         required
+        name="password"
         legend="Senha"
         type="password"
         placeholder="123456"
-        onChange={(e) => setPassword(e.target.value)}
       />
 
       <Input
         required
+        name="confirmPassword"
         legend="Confirme a senha"
         type="password"
         placeholder="123456"
-        onChange={(e) => setConfirmPassword(e.target.value)}
       />
 
+      {state?.error && (
+        <p className="text-red-600 font-semibold text-xs text-center">
+          {state.error}
+        </p>
+      )}
+
       <Button type="submit" isLoading={isLoading}>
-        Entrar
+        Cadastrar
       </Button>
 
       <a
