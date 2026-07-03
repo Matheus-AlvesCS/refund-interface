@@ -51,6 +51,12 @@ export function Dashboard() {
     }
   }
 
+  function onSubmit(e: React.SubmitEvent) {
+    e.preventDefault()
+
+    fetchRefunds()
+  }
+
   useEffect(() => {
     fetchRefunds()
   }, [])
@@ -72,7 +78,7 @@ export function Dashboard() {
       <h1 className="text-gray-100 text-xl font-bold">Solicitações</h1>
 
       <form
-        onSubmit={fetchRefunds}
+        onSubmit={onSubmit}
         className="flex items-center justify-between gap-3 mt-6 pb-6 border-b border-b-gray-400"
       >
         <Input
