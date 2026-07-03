@@ -1,4 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Axios, AxiosError } from "axios"
+
+import { api } from "../services/api"
 
 import { Input } from "../components/Input"
 import { Button } from "../components/Button"
@@ -6,28 +9,51 @@ import { RefundItem, type RefundItemProps } from "../components/RefundItem"
 import { Pagination } from "../components/Pagination"
 
 import { CATEGORIES } from "../utils/categories"
+import { formatCurrency } from "../utils/formatCurrency"
 
 import searchSvg from "../assets/search.svg"
 
-const fake_user = {
-  id: "8",
-  name: "Matheus",
-  category: "Alimentação",
-  amount: 58.85,
-  categoryImg: CATEGORIES["food"].icon,
-}
+const PER_PAGE = 5
 
 export function Dashboard() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(10)
-  const [refunds, setRefunds] = useState<RefundItemProps[]>([fake_user])
+  const [error, setError] = useState<string | null>(null)
+  const [refunds, setRefunds] = useState<RefundItemProps[]>([])
 
-  function fetchUsers(e: React.SubmitEvent) {
-    e.preventDefault()
+  async function fetchRefunds() {
+    try {
+      const { data } = await api.get<RefundsPaginationAPIResponse>(
+        `/refunds?name=${search.trim()}&page=${page}&perPage=${PER_PAGE}`,
+      )
 
-    console.log(search)
+      setRefunds(
+        data.allRefunds.map((refund) => {
+          return {
+            id: refund.id,
+            name: refund.user.name,
+            category: CATEGORIES[refund.category].name,
+            amount: formatCurrency(refund.amount),
+            categoryImg: CATEGORIES[refund.category].icon,
+          }
+        }),
+      )
+      setTotalPages(data.pagination.totalPages)
+    } catch (error) {
+      console.log(error)
+
+      if (error instanceof AxiosError) {
+        return setError(error.response?.data.message)
+      }
+
+      return setError("Ocorreu um erro ao buscar as solicitações")
+    }
   }
+
+  useEffect(() => {
+    fetchRefunds()
+  }, [])
 
   function handlePagination(action: "next" | "previous") {
     setPage((prevPage) => {
@@ -46,7 +72,7 @@ export function Dashboard() {
       <h1 className="text-gray-100 text-xl font-bold">Solicitações</h1>
 
       <form
-        onSubmit={fetchUsers}
+        onSubmit={fetchRefunds}
         className="flex items-center justify-between gap-3 mt-6 pb-6 border-b border-b-gray-400"
       >
         <Input
@@ -57,6 +83,12 @@ export function Dashboard() {
           <img src={searchSvg} alt="serach-icon" />
         </Button>
       </form>
+
+      {error && (
+        <p className="text-red-600 font-semibold text-xs text-center my-4">
+          {error}
+        </p>
+      )}
 
       <div className="flex flex-col gap-4 my-6 max-h-85.5 overflow-y-scroll">
         {refunds.length > 0 ? (

@@ -13,7 +13,7 @@ type Props = {
 export function Pagination({ current, total, onNext, onPrevious }: Props) {
   return (
     <div className="flex justify-center items-center gap-3">
-      <Button variant="small" onClick={onPrevious}>
+      <Button variant="small" onClick={onPrevious} disabled={current === 1}>
         <img src={leftSvg} alt="left-icon" />
       </Button>
 
@@ -21,7 +21,7 @@ export function Pagination({ current, total, onNext, onPrevious }: Props) {
         {current} / {total}
       </span>
 
-      <Button variant="small" onClick={onNext}>
+      <Button variant="small" onClick={onNext} disabled={current === total}>
         <img src={rightSvg} alt="right-icon" />
       </Button>
     </div>
