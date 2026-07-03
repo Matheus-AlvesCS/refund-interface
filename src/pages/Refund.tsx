@@ -1,5 +1,9 @@
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router"
+import { AxiosError } from "axios"
+import * as z from "zod"
+
+import { api } from "../services/api"
 
 import { Input } from "../components/Input"
 import { Select } from "../components/Select"
@@ -10,25 +14,73 @@ import { Button } from "../components/Button"
 
 import fileSvg from "../assets/file.svg"
 
+const refundSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(5, "O nome da solicitação deve ter no mínimo 5 caracteres"),
+  category: z.enum(CATEGORIES_KEYS, "Categoria inválida"),
+  amount: z.coerce.number().positive("O valor deve ser um número positivo"),
+})
+
 export function Refund() {
-  const [name, setName] = useState("Matheus")
-  const [category, setCategory] = useState("food")
-  const [amount, setAmount] = useState("58.85")
+  const [name, setName] = useState("")
+  const [category, setCategory] = useState("")
+  const [amount, setAmount] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [filename, setFilename] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null)
 
   const navigate = useNavigate()
   const params = useParams<{ id: string }>()
 
-  function onSubmit(e: React.SubmitEvent) {
-    e.preventDefault()
+  async function onSubmit(e: React.SubmitEvent) {
+    try {
+      e.preventDefault()
 
-    if (params.id) {
-      return navigate(-1)
+      setIsLoading(true)
+      setError(null)
+
+      if (params.id) {
+        return navigate(-1)
+      }
+
+      if (!file) {
+        return setError(
+          "É obrigatório enviar um comprovante para solicitar o reembolso",
+        )
+      }
+
+      const fileUploadForm = new FormData()
+      fileUploadForm.append("file", file)
+
+      const response = await api.post("/uploads", fileUploadForm)
+
+      const data = refundSchema.parse({
+        name,
+        category,
+        amount: amount.replace(",", "."),
+      })
+
+      await api.post("/refunds", {
+        ...data,
+        filename: response.data.filename,
+      })
+
+      navigate("/confirm", { state: { fromSubmit: true } })
+    } catch (error) {
+      console.log(error)
+
+      if (error instanceof z.ZodError) {
+        return setError(error.issues[0].message)
+      } else if (error instanceof AxiosError) {
+        return setError(error.response?.data.message)
+      }
+
+      return setError("Ocorreu um erro ao enviar a solicitação")
+    } finally {
+      setIsLoading(false)
     }
-
-    console.log(name, category, amount, filename)
-    navigate("/confirm", { state: { fromSubmit: true } })
   }
 
   return (
@@ -90,9 +142,15 @@ export function Refund() {
         </a>
       ) : (
         <Upload
-          filename={filename && filename.name}
-          onChange={(e) => e.target.files && setFilename(e.target.files[0])}
+          filename={file && file.name}
+          onChange={(e) => e.target.files && setFile(e.target.files[0])}
         />
+      )}
+
+      {error && (
+        <p className="text-red-600 font-semibold text-xs text-center">
+          {error}
+        </p>
       )}
 
       <Button isLoading={isLoading} type="submit">

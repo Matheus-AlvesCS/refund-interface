@@ -1,6 +1,8 @@
 import { createContext } from "react"
 import { useState, useEffect } from "react"
 
+import { api } from "../services/api"
+
 type AuthContext = {
   session: null | UserAPIResponse
   isLoading: boolean
@@ -21,6 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     localStorage.setItem(`${STORAGE_KEY}:token`, data.token)
     localStorage.setItem(`${STORAGE_KEY}:user`, JSON.stringify(data.user))
+
+    api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`
   }
 
   function remove() {
@@ -41,6 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         user: JSON.parse(user),
       })
+
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`
     }
 
     setIsLoading(false)
