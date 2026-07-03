@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router"
 import { AxiosError } from "axios"
 import * as z from "zod"
@@ -11,6 +11,8 @@ import { Upload } from "../components/Upload"
 
 import { CATEGORIES, CATEGORIES_KEYS } from "../utils/categories"
 import { Button } from "../components/Button"
+
+import { formatCurrency } from "../utils/formatCurrency"
 
 import fileSvg from "../assets/file.svg"
 
@@ -30,6 +32,7 @@ export function Refund() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
+  const [fileURL, setFileURL] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const params = useParams<{ id: string }>()
@@ -83,6 +86,31 @@ export function Refund() {
     }
   }
 
+  async function fetchRefund(id: string) {
+    try {
+      const { data } = await api.get<RefundAPIResponse>(`/refunds/${id}`)
+
+      setName(data.name)
+      setCategory(data.category)
+      setAmount(formatCurrency(data.amount))
+      setFileURL(data.filename)
+    } catch (error) {
+      console.log(error)
+
+      if (error instanceof AxiosError) {
+        return setError(error.response?.data.message)
+      }
+
+      return setError("Ocorreu um erro ao carregar os dados da solicitação")
+    }
+  }
+
+  useEffect(() => {
+    if (params.id) {
+      fetchRefund(params.id)
+    }
+  }, [params.id])
+
   return (
     <form
       onSubmit={onSubmit}
@@ -131,9 +159,9 @@ export function Refund() {
         />
       </div>
 
-      {params.id ? (
+      {params.id && fileURL ? (
         <a
-          href="https://youtube.com"
+          href={`http://localhost:3333/uploads/${fileURL}`}
           target="_blank"
           className="flex justify-center items-center gap-2 my-2 text-green-100 font-semibold text-sm hover:text-green-200 transition ease-linear"
         >

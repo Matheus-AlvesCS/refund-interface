@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Axios, AxiosError } from "axios"
+import { AxiosError } from "axios"
 
 import { api } from "../services/api"
 
@@ -59,7 +59,7 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchRefunds()
-  }, [])
+  }, [page])
 
   function handlePagination(action: "next" | "previous") {
     setPage((prevPage) => {
